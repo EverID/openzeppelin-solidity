@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "../token/ERC721/ERC721Full.sol";
 import "../token/ERC721/ERC721Mintable.sol";
@@ -11,7 +11,7 @@ import "../token/ERC721/ERC721Burnable.sol";
  * and a public setter for metadata URI
  */
 contract ERC721FullMock is ERC721Full, ERC721Mintable, ERC721MetadataMintable, ERC721Burnable {
-    constructor (string name, string symbol) public ERC721Mintable() ERC721Full(name, symbol) {}
+    constructor (string memory name, string memory symbol) public ERC721Mintable() ERC721Full(name, symbol) {}
 
     function exists(uint256 tokenId) public view returns (bool) {
         return _exists(tokenId);

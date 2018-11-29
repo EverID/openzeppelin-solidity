@@ -1,6 +1,6 @@
 /* solium-disable security/no-block-members */
 
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "../token/ERC20/SafeERC20.sol";
 import "../ownership/Ownable.sol";
@@ -112,11 +112,13 @@ contract TokenVesting is Ownable {
 
         require(unreleased > 0);
 
-        _released[token] = _released[token].add(unreleased);
+        address tokenAddress = address(token);
+
+        _released[tokenAddress] = _released[tokenAddress].add(unreleased);
 
         token.safeTransfer(_beneficiary, unreleased);
 
-        emit TokensReleased(token, unreleased);
+        emit TokensReleased(tokenAddress, unreleased);
     }
 
     /**
@@ -125,19 +127,21 @@ contract TokenVesting is Ownable {
      * @param token ERC20 token which is being vested
      */
     function revoke(IERC20 token) public onlyOwner {
+        address tokenAddress = address(token);
+
         require(_revocable);
-        require(!_revoked[token]);
+        require(!_revoked[tokenAddress]);
 
         uint256 balance = token.balanceOf(address(this));
 
         uint256 unreleased = _releasableAmount(token);
         uint256 refund = balance.sub(unreleased);
 
-        _revoked[token] = true;
+        _revoked[tokenAddress] = true;
 
         token.safeTransfer(owner(), refund);
 
-        emit TokenVestingRevoked(token);
+        emit TokenVestingRevoked(tokenAddress);
     }
 
     /**
@@ -145,7 +149,7 @@ contract TokenVesting is Ownable {
      * @param token ERC20 token which is being vested
      */
     function _releasableAmount(IERC20 token) private view returns (uint256) {
-        return _vestedAmount(token).sub(_released[token]);
+        return _vestedAmount(token).sub(_released[address(token)]);
     }
 
     /**
@@ -154,11 +158,11 @@ contract TokenVesting is Ownable {
      */
     function _vestedAmount(IERC20 token) private view returns (uint256) {
         uint256 currentBalance = token.balanceOf(address(this));
-        uint256 totalBalance = currentBalance.add(_released[token]);
+        uint256 totalBalance = currentBalance.add(_released[address(token)]);
 
         if (block.timestamp < _cliff) {
             return 0;
-        } else if (block.timestamp >= _start.add(_duration) || _revoked[token]) {
+        } else if (block.timestamp >= _start.add(_duration) || _revoked[address(token)]) {
             return totalBalance;
         } else {
             return totalBalance.mul(block.timestamp.sub(_start)).div(_duration);
