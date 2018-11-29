@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.5.0;
 
 import "../../math/SafeMath.sol";
 import "../../ownership/Secondary.sol";
@@ -42,12 +42,12 @@ contract Escrow is Secondary {
     * @dev Withdraw accumulated balance for a payee.
     * @param payee The address whose funds will be withdrawn and transferred to.
     */
-    function withdraw(address payee) public onlyPrimary {
+    function withdraw(address payable payee) public onlyPrimary {
         uint256 payment = _deposits[payee];
 
         _deposits[payee] = 0;
 
-        payee.transfer(payment);
+        address(payee).transfer(payment);
 
         emit Withdrawn(payee, payment);
     }
